@@ -18,7 +18,7 @@ app = FastAPI(
 frontend_origins = [
     "http://localhost:5173",
     "https://uk-wind-forecast-monitor-beige.vercel.app",
-    "https://uk-wind-forecast-monitor-kcejozkkz-gayathrigutha1936.vercel.app",
+    "https://uk-wind-forecast-monitor-kcejozkz-gayathrigutha1936.vercel.app",
 ]
 
 configured_origin = os.getenv("FRONTEND_ORIGIN")
