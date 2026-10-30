@@ -1,3 +1,4 @@
+
 import asyncio
 import os
 from datetime import date, timedelta
@@ -5,9 +6,8 @@ from datetime import date, timedelta
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from .analytics import calculate_analysis
-from .elexon import fetch_actuals, fetch_forecasts
-
+from app.analytics import calculate_analysis
+from app.elexon import fetch_actuals, fetch_forecasts
 
 app = FastAPI(
     title="UK Wind Forecast Monitor",
@@ -15,25 +15,20 @@ app = FastAPI(
     version="1.0.0",
 )
 
-
-# Configure CORS before adding the middleware.
-frontend_origins = [
+# Configure all allowed frontend origins BEFORE adding CORS middleware.
+frontend_origins = {
     "http://localhost:5173",
     "https://uk-wind-forecast-monitor-beige.vercel.app",
     "https://uk-wind-forecast-monitor-kcejozkz-gayathrigutha1936.vercel.app",
-]
+}
 
 configured_origin = os.getenv("FRONTEND_ORIGIN")
-
 if configured_origin:
-    frontend_origins.append(configured_origin.rstrip("/"))
-
-# Remove duplicate origins.
-frontend_origins = list(set(frontend_origins))
+    frontend_origins.add(configured_origin.strip().rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=frontend_origins,
+    allow_origins=sorted(frontend_origins),
     allow_credentials=False,
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
@@ -48,8 +43,12 @@ async def health():
 @app.get("/api/dates")
 async def available_dates():
     first_day = date(2026, 1, 1)
-
-    return {"dates": [(first_day + timedelta(days=i)).isoformat() for i in range(31)]}
+    return {
+        "dates": [
+            (first_day + timedelta(days=i)).isoformat()
+            for i in range(31)
+        ]
+    }
 
 
 @app.get("/api/analysis")
@@ -84,7 +83,6 @@ async def get_analysis(
 
     except Exception as exc:
         print(f"Analysis failed: {exc}")
-
         raise HTTPException(
             status_code=502,
             detail="Could not retrieve or process Elexon data.",
