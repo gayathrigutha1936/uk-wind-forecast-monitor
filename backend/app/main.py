@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 from datetime import date, timedelta
@@ -43,12 +42,7 @@ async def health():
 @app.get("/api/dates")
 async def available_dates():
     first_day = date(2026, 1, 1)
-    return {
-        "dates": [
-            (first_day + timedelta(days=i)).isoformat()
-            for i in range(31)
-        ]
-    }
+    return {"dates": [(first_day + timedelta(days=i)).isoformat() for i in range(31)]}
 
 
 @app.get("/api/analysis")
