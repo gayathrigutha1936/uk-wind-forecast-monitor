@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 from datetime import date, timedelta
@@ -17,21 +16,24 @@ app = FastAPI(
 )
 
 
-# Configure allowed frontend origins before registering CORS middleware.
-configured_origin = os.getenv("FRONTEND_ORIGIN")
-
+# Configure CORS before adding the middleware.
 frontend_origins = [
     "http://localhost:5173",
     "https://uk-wind-forecast-monitor-beige.vercel.app",
     "https://uk-wind-forecast-monitor-kcejozkz-gayathrigutha1936.vercel.app",
 ]
 
+configured_origin = os.getenv("FRONTEND_ORIGIN")
+
 if configured_origin:
     frontend_origins.append(configured_origin.rstrip("/"))
 
+# Remove duplicate origins.
+frontend_origins = list(set(frontend_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=list(set(frontend_origins)),
+    allow_origins=frontend_origins,
     allow_credentials=False,
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
@@ -47,12 +49,7 @@ async def health():
 async def available_dates():
     first_day = date(2026, 1, 1)
 
-    return {
-        "dates": [
-            (first_day + timedelta(days=i)).isoformat()
-            for i in range(31)
-        ]
-    }
+    return {"dates": [(first_day + timedelta(days=i)).isoformat() for i in range(31)]}
 
 
 @app.get("/api/analysis")
